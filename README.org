@@ -38,6 +38,70 @@ should Just Work.
 Certainly, b-b is not there yet.  It may never be there completely.  But we'll
 /try/, dagnabbit.
 
+* Installation
+
+In its current state, burgled-batteries3 relies on older versions of python3 (<3.8) and SBCL. These requirements have been summed up in [[file:environment.yml]]. Although, they still don't allow ~(asdf:test-system "burgled-batteries3")~ to pass, which might require looking into more detail what versions of lisp and non-lisp dependencies are involved.
+
+** 1. Install miniconda or micromamba
+
+Install [[https://docs.anaconda.com/free/miniconda/index.html][miniconda]] or preferably [[https://mamba.readthedocs.io/en/latest/installation/micromamba-installation.html][micromamba]]. Create the burgled-batteries3 environment from the environment.yml by executing the following in the root directory of this repository.
+
+#+begin_src sh
+micromamba create env -f environment.yml
+#+end_src
+
+If successful, you should be able to start the virtual environment ~burgled-batteries3~ with python3.6.0 and SBCL 1.5.4.
+
+#+begin_src sh
+micromamba activate burgled-batteries3
+#+end_src
+
+** 2. Install quicklisp
+
+Find the install instructions [[https://www.quicklisp.org/beta/][here]].
+
+** 3. Set the environment variables
+
+Following this, set the environment variables required by burgled-batteries3 by looking at ~python3-config --ldflags~ and ~python3-config --includes~. For example:
+
+#+begin_src sh
+export BB_PYTHON3_DYLIB="/path/to/micromamba/envs/python36/lib/libpython3.6m.so"
+export BB_PYTHON3_INCLUDE_DIR="/path/to/micromamba/envs/python36/include/python3.6m"
+
+** 4. Start the lisp process
+
+Optionally, install rlwrap from your package manager.
+
+#+begin_src sh
+rlwrap sbcl --no-userinit --load /path/to/quicklisp/setup.lisp
+#+end_src
+
+** 5. Quickload burgled-batteries3
+
+#+begin_src lisp
+(ql:quickload "burgled-batteries3")
+#+end_src
+
+** 6. Test if it works
+
+Enter the below one-by-one into the lisp repl if each works as expected.
+
+#+begin_src lisp
+(in-package #:burgled-batteries3)
+(startup-python)
+
+(run "1+1") ; => 2
+
+(import "feedparser")
+(defpyfun "feedparser.parse" (thing))
+(documentation 'feedparser.parse 'function)
+; => "Parse a feed from a URL, file, stream, or string"
+(feedparser.parse "https://www.quicklisp.org/beta/")
+; => #<HASH-TABLE>
+
+(shutdown-python)
+#+end_src
+
 * Basic Type Mapping
 Python objects are converted to a Lisp object where possible.  Where a
 conversion is unknown, a pointer to the CPython object is returned (or, if
